@@ -20,23 +20,30 @@ $fn = 96;
 preview_mode = false;
 show_hardware_cutout = false;
 show_support_ribs = true;
+show_connector_rings = true;
 
 snow_depth = 2;                 // 0..3 recommended for early prototypes
 shade_diameter = 220;
 shade_height = 180;
 layer_count = 15;
-layer_thickness = 2.4;
+layer_thickness = 2.6;
 vertical_spacing = 9;
 layer_twist = 8;
-scale_profile = [0.28, 0.36, 0.46, 0.58, 0.72, 0.84, 0.93, 1.00, 0.96, 0.88, 0.76, 0.62, 0.48, 0.36, 0.26];
+scale_profile = [0.18, 0.26, 0.38, 0.52, 0.68, 0.83, 0.94, 1.00, 0.95, 0.86, 0.72, 0.56, 0.40, 0.27, 0.17];
 
 hardware_hole_diameter = 42;    // provisional central opening
 hardware_cap_diameter = 58;     // top cap support region
 bulb_clearance_diameter = 95;   // clearance envelope for bulb
 rib_count = 6;
-rib_width = 8;
+rib_width = 6;
 rib_thickness = 3;
-rib_inset = 18;
+rib_inset = 44;
+connector_ring_positions = [36, 92];
+connector_ring_width = 6;
+connector_ring_thickness = 2.4;
+connector_ring_clearance = 92;
+connector_arc_span = 72;
+connector_arc_offset = 30;
 
 // ----------------------------
 // Geometry helpers
@@ -101,11 +108,36 @@ module top_mount_disc(outer_d=80, hole_d=42, thickness=4) {
         }
 }
 
-module vertical_ribs(height=120, radius=70, count=6, width=8, thickness=3) {
+module vertical_ribs(height=120, radius=70, count=6, width=8, thickness=3, z0=0) {
     for (a = [0 : 360/count : 360 - 360/count])
         rotate([0,0,a])
-            translate([radius,0,height/2])
+            translate([radius,0,z0 + height/2])
                 cube([thickness, width, height], center=true);
+}
+
+module arc_wedge(r=60, ang=60) {
+    pts = concat(
+        [[0,0]],
+        [for (a = [-ang/2 : 4 : ang/2]) [r*cos(a), r*sin(a)]],
+        [[0,0]]
+    );
+    polygon(points=pts);
+}
+
+module connector_ring_arc(z=20, outer_d=140, inner_d=120, thickness=2, span=72, offset=0) {
+    translate([0,0,z])
+        linear_extrude(height=thickness)
+            intersection() {
+                difference() {
+                    circle(d=outer_d);
+                    circle(d=inner_d);
+                }
+                union() {
+                    for (a = [offset : 120 : offset + 240])
+                        rotate(a)
+                            arc_wedge(r=outer_d/2 + 2, ang=span);
+                }
+            }
 }
 
 // ----------------------------
@@ -113,39 +145,55 @@ module vertical_ribs(height=120, radius=70, count=6, width=8, thickness=3) {
 // ----------------------------
 module fracta_snow_shade() {
     total_height = (layer_count-1)*vertical_spacing;
+    rib_z0 = 14;
+    rib_height = total_height - 22;
 
-    if (show_support_ribs)
-        vertical_ribs(
-            height=total_height + layer_thickness,
-            radius=(shade_diameter/2) - rib_inset,
-            count=rib_count,
-            width=rib_width,
-            thickness=rib_thickness
-        );
+    union() {
+        if (show_support_ribs)
+            vertical_ribs(
+                height=rib_height,
+                radius=(shade_diameter/2) - rib_inset,
+                count=rib_count,
+                width=rib_width,
+                thickness=rib_thickness,
+                z0=rib_z0
+            );
 
-    for (i = [0:layer_count-1]) {
-        layer_scale = i < len(scale_profile)
-            ? scale_profile[i]
-            : 1;
-        zpos = i * vertical_spacing;
-        twist = (i - (layer_count-1)/2) * layer_twist;
-        translate([0,0,zpos])
-            rotate([0,0,twist])
-                snowflake_layer(
-                    radius=(shade_diameter/2) * layer_scale,
-                    depth=snow_depth,
-                    thickness=layer_thickness,
-                    center_hole=hardware_hole_diameter
+        if (show_connector_rings)
+            for (idx = [0:len(connector_ring_positions)-1])
+                connector_ring_arc(
+                    z=connector_ring_positions[idx],
+                    outer_d=shade_diameter - 2*rib_inset - (idx==0 ? 6 : 0),
+                    inner_d=connector_ring_clearance,
+                    thickness=connector_ring_thickness,
+                    span=connector_arc_span,
+                    offset=connector_arc_offset + idx*18
                 );
-    }
 
-    // Top support disc for socket/collar area
-    translate([0,0,total_height + layer_thickness])
-        top_mount_disc(
-            outer_d=hardware_cap_diameter,
-            hole_d=hardware_hole_diameter,
-            thickness=4
-        );
+        for (i = [0:layer_count-1]) {
+            layer_scale = i < len(scale_profile)
+                ? scale_profile[i]
+                : 1;
+            zpos = i * vertical_spacing;
+            twist = (i - (layer_count-1)/2) * layer_twist;
+            translate([0,0,zpos])
+                rotate([0,0,twist])
+                    snowflake_layer(
+                        radius=(shade_diameter/2) * layer_scale,
+                        depth=snow_depth,
+                        thickness=layer_thickness,
+                        center_hole=hardware_hole_diameter
+                    );
+        }
+
+        // Top support disc for socket/collar area
+        translate([0,0,total_height + layer_thickness])
+            top_mount_disc(
+                outer_d=hardware_cap_diameter,
+                hole_d=hardware_hole_diameter,
+                thickness=4
+            );
+    }
 }
 
 module bulb_clearance_preview(height=130, diameter=95) {
