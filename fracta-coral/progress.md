@@ -1,11 +1,17 @@
 # Progress
 
-## Status
-- Initialized folder
-- Added project README
-- Added progress tracker
+## Current status
+- Folder initialized
+- README drafted
+- Fracta Coral selected for development
+
+## Design concept
+- Fractal basis: coral reef branching
+- Lamp type: pendant
+- Intent: denser porous volume with organic branching growth
 
 ## Next steps
-- Define design brief
-- Select target IKEA hardware interface
-- Sketch parametric OpenSCAD approach
+1. Scaffold files
+2. Build first coral volume
+3. Render and assess density
+4. Iterate and commit
