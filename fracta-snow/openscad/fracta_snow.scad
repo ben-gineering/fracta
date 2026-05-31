@@ -21,6 +21,7 @@ preview_mode = false;
 show_hardware_cutout = false;
 show_support_ribs = true;
 show_connector_rings = true;
+show_helical_links = true;
 
 snow_depth = 2;                 // 0..3 recommended for early prototypes
 shade_diameter = 220;
@@ -35,15 +36,16 @@ hardware_hole_diameter = 42;    // provisional central opening
 hardware_cap_diameter = 52;     // provisional top cap support region
 bulb_clearance_diameter = 95;   // clearance envelope for bulb
 rib_count = 6;
-rib_width = 5;
-rib_thickness = 3;
-rib_inset = 56;
-connector_ring_positions = [36, 92];
-connector_ring_width = 6;
-connector_ring_thickness = 2.0;
+rib_width = 6;
+rib_thickness = 3.6;
+rib_inset = 54;
+connector_ring_positions = [36, 92, 132];
+connector_ring_width = 7;
+connector_ring_thickness = 3.0;
 connector_ring_clearance = 88;
-connector_arc_span = 64;
+connector_arc_span = 84;
 connector_arc_offset = 30;
+helical_link_diameter = 6;
 
 // ----------------------------
 // Geometry helpers
@@ -140,13 +142,33 @@ module connector_ring_arc(z=20, outer_d=140, inner_d=120, thickness=2, span=72, 
             }
 }
 
+module helical_links() {
+    for (r = [0:rib_count-1]) {
+        a = r * 360/rib_count;
+        for (i = [0:layer_count-2]) {
+            s1 = i < len(scale_profile) ? scale_profile[i] : 1;
+            s2 = (i+1) < len(scale_profile) ? scale_profile[i+1] : 1;
+            z1 = i * vertical_spacing + layer_thickness*0.5;
+            z2 = (i+1) * vertical_spacing + layer_thickness*0.5;
+            rr1 = max(connector_ring_clearance/2 + 8, (shade_diameter/2)*s1 - 14);
+            rr2 = max(connector_ring_clearance/2 + 8, (shade_diameter/2)*s2 - 14);
+            p1 = [rr1*cos(a + i*layer_twist*0.45), rr1*sin(a + i*layer_twist*0.45), z1];
+            p2 = [rr2*cos(a + (i+1)*layer_twist*0.45), rr2*sin(a + (i+1)*layer_twist*0.45), z2];
+            hull() {
+                translate(p1) sphere(d=helical_link_diameter);
+                translate(p2) sphere(d=helical_link_diameter);
+            }
+        }
+    }
+}
+
 // ----------------------------
 // Main lamp modules
 // ----------------------------
 module fracta_snow_shade() {
     total_height = (layer_count-1)*vertical_spacing;
     rib_z0 = 18;
-    rib_height = total_height - 38;
+    rib_height = total_height - 28;
 
     union() {
         if (show_support_ribs)
@@ -163,12 +185,15 @@ module fracta_snow_shade() {
             for (idx = [0:len(connector_ring_positions)-1])
                 connector_ring_arc(
                     z=connector_ring_positions[idx],
-                    outer_d=shade_diameter - 2*rib_inset + (idx==0 ? 2 : 6),
+                    outer_d=shade_diameter - 2*rib_inset + (idx==0 ? 6 : 10),
                     inner_d=connector_ring_clearance,
                     thickness=connector_ring_thickness,
                     span=connector_arc_span,
                     offset=connector_arc_offset + idx*18
                 );
+
+        if (show_helical_links)
+            helical_links();
 
         for (i = [0:layer_count-1]) {
             layer_scale = i < len(scale_profile)
@@ -186,7 +211,6 @@ module fracta_snow_shade() {
                     );
         }
 
-        // Top support disc for socket/collar area
         translate([0,0,total_height + layer_thickness])
             top_mount_disc(
                 outer_d=hardware_cap_diameter,
