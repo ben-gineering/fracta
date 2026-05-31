@@ -32,17 +32,17 @@ layer_twist = 8;
 scale_profile = [0.18, 0.26, 0.38, 0.52, 0.68, 0.83, 0.94, 1.00, 0.95, 0.86, 0.72, 0.56, 0.40, 0.27, 0.17];
 
 hardware_hole_diameter = 42;    // provisional central opening
-hardware_cap_diameter = 58;     // top cap support region
+hardware_cap_diameter = 52;     // provisional top cap support region
 bulb_clearance_diameter = 95;   // clearance envelope for bulb
 rib_count = 6;
-rib_width = 6;
+rib_width = 5;
 rib_thickness = 3;
-rib_inset = 44;
+rib_inset = 56;
 connector_ring_positions = [36, 92];
 connector_ring_width = 6;
-connector_ring_thickness = 2.4;
-connector_ring_clearance = 92;
-connector_arc_span = 72;
+connector_ring_thickness = 2.0;
+connector_ring_clearance = 88;
+connector_arc_span = 64;
 connector_arc_offset = 30;
 
 // ----------------------------
@@ -145,8 +145,8 @@ module connector_ring_arc(z=20, outer_d=140, inner_d=120, thickness=2, span=72, 
 // ----------------------------
 module fracta_snow_shade() {
     total_height = (layer_count-1)*vertical_spacing;
-    rib_z0 = 14;
-    rib_height = total_height - 22;
+    rib_z0 = 18;
+    rib_height = total_height - 38;
 
     union() {
         if (show_support_ribs)
@@ -163,7 +163,7 @@ module fracta_snow_shade() {
             for (idx = [0:len(connector_ring_positions)-1])
                 connector_ring_arc(
                     z=connector_ring_positions[idx],
-                    outer_d=shade_diameter - 2*rib_inset - (idx==0 ? 6 : 0),
+                    outer_d=shade_diameter - 2*rib_inset + (idx==0 ? 2 : 6),
                     inner_d=connector_ring_clearance,
                     thickness=connector_ring_thickness,
                     span=connector_arc_span,
