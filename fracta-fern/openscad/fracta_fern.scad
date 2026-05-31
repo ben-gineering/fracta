@@ -3,21 +3,25 @@ include <BOSL2/std.scad>;
 $fn = 72;
 
 levels = 4;
-branch_scale = 0.7;
-branch_angle = 34;
-leaf_length = 88;
-leaf_width = 10;
-leaf_thickness = 3;
+branch_scale = 0.72;
+branch_angle = 32;
+leaf_length = 86;
+leaf_width = 12;
+leaf_thickness = 3.2;
 stem_height = 182;
 ring_diameter = 58;
 hardware_hole_diameter = 42;
 arm_count = 6;
-arm_drop = 26;
-arm_radius = 20;
+arm_drop = 24;
+arm_radius = 18;
 show_center_hub = true;
-hub_diameter = 26;
+hub_diameter = 30;
 show_lower_ring = true;
-lower_ring_diameter = 118;
+lower_ring_diameter = 124;
+show_upper_ring = true;
+upper_ring_diameter = 92;
+ring_thickness = 3.2;
+ring_width = 6;
 
 module leaf_segment(len=80, width=10, thickness=3) {
     linear_extrude(height=thickness)
@@ -45,6 +49,13 @@ module fern_arm(a=0, z=0) {
                 branch(0, leaf_length, leaf_width);
 }
 
+module arm_root(a=0, z=24, len=26, d=9) {
+    rotate([0,0,a])
+        translate([0,0,z])
+            rotate([90,0,0])
+                cylinder(d=d, h=len);
+}
+
 module top_mount() {
     translate([0,0,stem_height+8])
         linear_extrude(height=4)
@@ -54,7 +65,7 @@ module top_mount() {
             }
 }
 
-module lower_ring(z=18, outer_d=118, width=5, thickness=2.4) {
+module support_ring(z=18, outer_d=118, width=5, thickness=2.4) {
     translate([0,0,z])
         linear_extrude(height=thickness)
             difference() {
@@ -69,18 +80,25 @@ module center_hub(z=20, d=26, h=18) {
 }
 
 module fracta_fern() {
-    cylinder(d=8, h=stem_height);
+    union() {
+        cylinder(d=8, h=stem_height);
 
-    if (show_center_hub)
-        center_hub(z=18, d=hub_diameter, h=18);
+        if (show_center_hub)
+            center_hub(z=18, d=hub_diameter, h=18);
 
-    for (a = [0:360/arm_count:360-360/arm_count])
-        fern_arm(a=a, z=24);
+        for (a = [0:360/arm_count:360-360/arm_count]) {
+            arm_root(a=a, z=26, len=arm_radius+10, d=9);
+            fern_arm(a=a, z=24);
+        }
 
-    if (show_lower_ring)
-        lower_ring(z=22, outer_d=lower_ring_diameter, width=5, thickness=2.4);
+        if (show_lower_ring)
+            support_ring(z=22, outer_d=lower_ring_diameter, width=ring_width, thickness=ring_thickness);
 
-    top_mount();
+        if (show_upper_ring)
+            support_ring(z=54, outer_d=upper_ring_diameter, width=ring_width-1, thickness=ring_thickness);
+
+        top_mount();
+    }
 }
 
 fracta_fern();
