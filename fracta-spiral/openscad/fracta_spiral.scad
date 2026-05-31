@@ -7,27 +7,29 @@ show_bulb_preview = false;
 fin_count = 42;
 fin_height = 92;
 fin_width = 52;
-fin_thickness = 3;
-spiral_radius = 78;
+fin_thickness = 3.2;
+spiral_radius = 76;
 spiral_height = 220;
 spiral_turns = 1.7;
 rotation_bias = 74;
 vertical_scale = 1.0;
 base_scale = 0.98;
-top_scale = 0.26;
+top_scale = 0.3;
 fin_tilt = 74;
 inner_ring_diameter = 88;
-show_spine = false;
-spine_diameter = 8;
+show_spine = true;
+spine_diameter = 10;
 show_connector_arcs = true;
-connector_arc_span = 96;
-connector_arc_width = 5;
-connector_arc_thickness = 2.0;
-connector_arc_positions = [46, 116, 186];
+connector_arc_span = 120;
+connector_arc_width = 6;
+connector_arc_thickness = 3.2;
+connector_arc_positions = [38, 90, 142, 194];
 connector_arc_offset = 10;
 show_lower_bowl = true;
-lower_bowl_height = 30;
-lower_bowl_radius = 48;
+lower_bowl_height = 34;
+lower_bowl_radius = 50;
+add_helical_rail = true;
+rail_diameter = 6;
 
 hardware_hole_diameter = 42;
 top_mount_diameter = 56;
@@ -116,27 +118,53 @@ module spiral_fin(i=0) {
                     fin_element(w=fin_width,h=fin_height,t=fin_thickness);
 }
 
+module helical_rail() {
+    for (i = [0:fin_count-2]) {
+        t1 = i/(fin_count-1);
+        t2 = (i+1)/(fin_count-1);
+        e1 = ease_in_out(t1);
+        e2 = ease_in_out(t2);
+        a1 = 360*spiral_turns*t1;
+        a2 = 360*spiral_turns*t2;
+        z1 = spiral_height*t1;
+        z2 = spiral_height*t2;
+        r1 = spiral_radius - 18*e1;
+        r2 = spiral_radius - 18*e2;
+        p1 = [r1*cos(a1), r1*sin(a1), z1 + fin_thickness*0.5];
+        p2 = [r2*cos(a2), r2*sin(a2), z2 + fin_thickness*0.5];
+        hull() {
+            translate(p1) sphere(d=rail_diameter);
+            translate(p2) sphere(d=rail_diameter);
+        }
+    }
+}
+
 module fracta_spiral() {
-    inner_spine();
+    union() {
+        inner_spine();
 
-    if (show_lower_bowl)
-        lower_bowl(z=72, r=lower_bowl_radius, h=lower_bowl_height, wall=2.6);
+        if (show_lower_bowl)
+            lower_bowl(z=72, r=lower_bowl_radius, h=lower_bowl_height, wall=2.6);
 
-    for (i = [0:fin_count-1])
-        spiral_fin(i);
+        if (add_helical_rail)
+            helical_rail();
 
-    if (show_connector_arcs)
-        for (idx = [0:len(connector_arc_positions)-1])
-            connector_arc(
-                z=connector_arc_positions[idx],
-                outer_d=inner_ring_diameter - idx*4,
-                width=connector_arc_width,
-                thickness=connector_arc_thickness,
-                span=connector_arc_span,
-                offset=connector_arc_offset + idx*58
-            );
+        for (i = [0:fin_count-1])
+            spiral_fin(i);
 
-    top_mount_disc(outer_d=top_mount_diameter, hole_d=hardware_hole_diameter, thickness=4);
+        if (show_connector_arcs)
+            for (idx = [0:len(connector_arc_positions)-1])
+                connector_arc(
+                    z=connector_arc_positions[idx],
+                    outer_d=inner_ring_diameter - idx*4,
+                    width=connector_arc_width,
+                    thickness=connector_arc_thickness,
+                    span=connector_arc_span,
+                    offset=connector_arc_offset + idx*58
+                );
+
+        top_mount_disc(outer_d=top_mount_diameter, hole_d=hardware_hole_diameter, thickness=4);
+    }
 
     if (show_bulb_preview)
         bulb_preview();
