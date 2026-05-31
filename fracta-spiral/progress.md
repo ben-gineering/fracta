@@ -1,9 +1,11 @@
 # Progress
 
 ## Current status
-- Folder initialized
-- Project README drafted
-- Fracta Spiral selected as next lamp to develop
+- README drafted
+- OpenSCAD scaffold created
+- Helical fin concept modeled and refined
+- Render set generated
+- Iteration commits created
 
 ## Design concept
 - Fractal basis: recursive spiral growth / repeated fin scaling
@@ -17,9 +19,12 @@
 - Favor deterministic repeated modules
 - Review the design through rendered iteration, not only code inspection
 
-## Next steps
-1. Create scaffold folders and notes
-2. Build first-pass spiral fin model
-3. Render iso/front/side/top views
-4. Review the silhouette and density
-5. Iterate and commit meaningful stages
+## Outcome
+- Chosen direction: sculptural helical fin shade wrapping a central bulb cavity
+- Key features: repeated fin modules, top mounting disc, refined silhouette from iterative render review
+- Files in place:
+  - `openscad/fracta_spiral.scad`
+  - `renders/fracta_spiral_iso.png`
+  - `renders/fracta_spiral_front_xy.png`
+  - `renders/fracta_spiral_side_yz.png`
+  - `renders/fracta_spiral_top_xy.png`

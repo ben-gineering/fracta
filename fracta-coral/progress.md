@@ -1,17 +1,23 @@
 # Progress
 
 ## Current status
-- Folder initialized
 - README drafted
-- Fracta Coral selected for development
+- OpenSCAD scaffold created
+- Coral branching concept modeled
+- Render set generated
+- Selected concept committed
 
 ## Design concept
 - Fractal basis: coral reef branching
 - Lamp type: pendant
 - Intent: denser porous volume with organic branching growth
 
-## Next steps
-1. Scaffold files
-2. Build first coral volume
-3. Render and assess density
-4. Iterate and commit
+## Outcome
+- Chosen direction: ringed porous coral shade with staggered branching clusters
+- Key features: taller branch recursion, inner cylindrical cage, denser reef-like perimeter
+- Files in place:
+  - `openscad/fracta_coral.scad`
+  - `renders/fracta_coral_iso.png`
+  - `renders/fracta_coral_front_xy.png`
+  - `renders/fracta_coral_side_yz.png`
+  - `renders/fracta_coral_top_xy.png`

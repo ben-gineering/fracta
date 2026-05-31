@@ -1,9 +1,11 @@
 # Progress
 
 ## Current status
-- Folder initialized
 - README drafted
-- Fracta Fern selected for development
+- OpenSCAD scaffold created
+- First branching concept modeled
+- Render set generated
+- Selected concept committed
 
 ## Design concept
 - Fractal basis: branching fern-like recursive growth
@@ -11,9 +13,12 @@
 - Primary expression: layered branch ribs around a central light source
 - Intent: organic but controlled silhouette
 
-## Next steps
-1. Create scaffold folders and notes
-2. Build a first branching model
-3. Render iso/front/side/top views
-4. Review branching density and silhouette
-5. Iterate and commit
+## Outcome
+- Chosen direction: radial fern-like branching arms around a central hub
+- Key features: six frond arms, shallow lower ring, compact top mount
+- Files in place:
+  - `openscad/fracta_fern.scad`
+  - `renders/fracta_fern_iso.png`
+  - `renders/fracta_fern_front_xy.png`
+  - `renders/fracta_fern_side_yz.png`
+  - `renders/fracta_fern_top_xy.png`
