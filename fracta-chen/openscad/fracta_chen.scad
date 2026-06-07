@@ -3,12 +3,8 @@ include <BOSL2/std.scad>;
 $fn = 36;
 
 // Fracta Chen
-// First-pass pendant generated from sampled Chen attractor trajectories.
+// First-pass Chen attractor study generated from sampled trajectories.
 // Uses a small built-in Euler integrator to generate points directly in OpenSCAD.
-
-show_bulb_preview = false;
-show_inner_cage = true;
-show_outer_ties = true;
 
 // Chen system parameters
 chen_a = 35;
@@ -25,24 +21,11 @@ trajectory_offsets = [
     [-0.18,0.16,-0.10]
 ];
 
-// Lamp shaping
+// Display shaping
 path_diameter = 4.2;
 waist_scale = [4.8, 4.8, 3.1];
 model_rotation = [90,0,18];
-model_shift_z = 112;
-mount_ring_diameter = 58;
-hardware_hole_diameter = 42;
-inner_cage_diameter = 86;
-inner_cage_height = 126;
-inner_cage_z = 34;
-outer_tie_diameter = 150;
-outer_tie_zs = [42, 84, 124];
-outer_tie_width = 5.5;
-outer_tie_thickness = 3;
-
-bulb_diameter = 95;
-bulb_height = 132;
-bulb_z = 18;
+model_shift = [0,0,112];
 
 function vadd(a,b) = [a[0]+b[0], a[1]+b[1], a[2]+b[2]];
 function vmul(a,s) = [a[0]*s, a[1]*s, a[2]*s];
@@ -75,40 +58,9 @@ module trajectory_tube(points, d=4) {
         point_link(scaled_point(points[i]), scaled_point(points[i+1]), d=d);
 }
 
-module support_ring(z=42, d=150, width=5.5, thickness=3) {
-    translate([0,0,z])
-        linear_extrude(height=thickness)
-            difference() {
-                circle(d=d);
-                circle(d=d-2*width);
-            }
-}
-
-module inner_cage(z=34, d=86, h=126, wall=4.5) {
-    difference() {
-        translate([0,0,z]) cylinder(d=d, h=h);
-        translate([0,0,z-1]) cylinder(d=d-2*wall, h=h+2);
-    }
-}
-
-module top_mount() {
-    translate([0,0,inner_cage_z + inner_cage_height + 18])
-        linear_extrude(height=4)
-            difference() {
-                circle(d=mount_ring_diameter);
-                circle(d=hardware_hole_diameter);
-            }
-}
-
-module bulb_preview() {
-    color("gold",0.25)
-        translate([0,0,bulb_z])
-            cylinder(d=bulb_diameter, h=bulb_height);
-}
-
 module chen_bundle() {
     rotate(model_rotation)
-        translate([0,0,model_shift_z])
+        translate(model_shift)
             union() {
                 for (k = [0:trajectory_count-1]) {
                     seed0 = [0.12, 0.18, 0.15];
@@ -125,21 +77,7 @@ module chen_bundle() {
 }
 
 module fracta_chen() {
-    union() {
-        if (show_inner_cage)
-            inner_cage(z=inner_cage_z, d=inner_cage_diameter, h=inner_cage_height, wall=4.5);
-
-        chen_bundle();
-
-        if (show_outer_ties)
-            for (zv = outer_tie_zs)
-                support_ring(z=zv, d=outer_tie_diameter, width=outer_tie_width, thickness=outer_tie_thickness);
-
-        top_mount();
-    }
-
-    if (show_bulb_preview)
-        bulb_preview();
+    chen_bundle();
 }
 
 fracta_chen();
